@@ -235,3 +235,18 @@ function saveBestScore() {
 loadSettings();
 updateStats();
 displayBestScore.textContent = localStorage.getItem("bestScore") || "0";
+
+/**Improvement added****** */
+  function generatefeedback() {
+      if (score===0) {
+          return "Nice Try, Until Next time!";
+      } else if (score < 15) {
+          return "Not Bad, Keep Going!";
+      } else if (score < 30) {
+          return "Good job, Now you're Getting it!";
+      } else if (score < 50) {
+          return "Impressive!";
+      } else {
+          return "Fantastic, You're a Target Pro!";
+  }
+}
