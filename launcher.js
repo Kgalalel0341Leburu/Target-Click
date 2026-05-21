@@ -1,117 +1,115 @@
+window.onload = function() {
+  console.log("Target Click Launcher has loaded");
+};
+
+/***************** Default Settings ********************/
+let Settings = { 
+  PlayerName: "guest", 
+  difficulty: "medium", 
+  gamelength: 30, 
+  theme: "Classic", 
+  soundenabled: true, 
+  doublepoints: false, 
+  bonustargets: true
+};
+
+// Load saved settings  available
+const saved = JSON.parse(sessionStorage.getItem("settings"));
+if (saved) Settings = saved;
+
+/***************** DOM Elements ********************/
+const playerinput = document.getElementById("playerName");
+const selectdifficulty = document.getElementById("difficulty");
+const selectlength = document.getElementById("gameLength");
+const soundCheck = document.getElementById("soundEnabled");
+const doublePointsCheck = document.getElementById("doublePoints");
+const bonusTargetsCheck = document.getElementById("bonusTargets");
+const previewText = document.getElementById("previewText");
+
 const openGameBtn = document.getElementById("openGameBtn");
 const saveSettingsBtn = document.getElementById("saveSettingsBtn");
 const loadSettingsBtn = document.getElementById("loadSettingsBtn");
 const resetSettingsBtn = document.getElementById("resetSettingsBtn");
-const backBtn = document.getElementById("backBtn");
-const playerInput = document.getElementById("playerName");
-const difficultySelect = document.getElementById("difficulty");
-const lengthSelect = document.getElementById("gameLength");
-const previewText = document.getElementById("previewText");
-const soundCheckbox = document.getElementById("soundEnabled");
-const doublePointsCheckbox = document.getElementById("doublePoints");
-const bonusTargetsCheckbox = document.getElementById("bonusTargets");
 
-let settings = {
-  player: "Player1",
-  difficulty: "medium",
-  theme: "classic",
-  length: 30,
-  soundEnabled: true,
-  doublePoints: false,
-  bonusTargets: true
-};
-
+/***************** Helpers ********************/
 function getSelectedTheme() {
-  const selected = document.querySelector('input[name="theme"]:checked');
-  return selected ? selected.value : "classic";
+  const selected = document.querySelector("input[name='theme']:checked");
+  return selected ? selected.value : Settings.theme;
 }
 
+/***************** Preview ********************/
 function updatePreview() {
-  const themeText = getSelectedTheme();
-  previewText.textContent = `Player: ${playerInput?.value || settings.player} | Difficulty: ${difficultySelect?.value || settings.difficulty} | Length: ${lengthSelect?.value || settings.length} seconds | Theme: ${themeText}`;
+  previewText.textContent = `
+    playerName: ${playerinput.value || Settings.PlayerName}, 
+    difficulty: ${selectdifficulty.value || Settings.difficulty}, 
+    gamelength: ${selectlength.value || Settings.gamelength}, 
+    theme: ${getSelectedTheme()}, 
+    soundenabled: ${soundCheck.checked || Settings.soundenabled}, 
+    doublepoints: ${doublePointsCheck.checked || Settings.doublepoints}, 
+    bonustargets: ${bonusTargetsCheck.checked || Settings.bonustargets}
+  `;
 }
 
-function applySettings() {
-  settings.player = playerInput?.value.trim() || "Player1";
-  settings.difficulty = difficultySelect?.value || "medium";
-  settings.theme = getSelectedTheme();
-  settings.length = parseInt(lengthSelect?.value || "30", 10);
-  settings.soundEnabled = soundCheckbox?.checked === true;
-  settings.doublePoints = doublePointsCheckbox?.checked === true;
-  settings.bonusTargets = bonusTargetsCheckbox?.checked === true;
-
-  localStorage.setItem("targetClickSettings", JSON.stringify(settings));
-  updatePreview();
+/***************** Save/Load/Reset ********************/
+function updateSaveSettings() {
+  const settings = {
+    PlayerName: playerinput.value || Settings.PlayerName,
+    difficulty: selectdifficulty.value || Settings.difficulty,
+    gamelength: parseInt(selectlength.value) || Settings.gamelength,
+    theme: getSelectedTheme(),
+    soundenabled: soundCheck.checked || Settings.soundenabled,
+    doublepoints: doublePointsCheck.checked || Settings.doublepoints,
+    bonustargets: bonusTargetsCheck.checked || Settings.bonustargets
+  };
+  sessionStorage.setItem("settings", JSON.stringify(settings));
+  alert("Settings have been saved!");
 }
 
-function loadLauncherSettings() {
-  const saved = JSON.parse(localStorage.getItem("targetClickSettings"));
-  if (saved) {
-    settings = {
-      ...settings,
-      ...saved
-    };
-    if (playerInput) playerInput.value = settings.player;
-    if (difficultySelect) difficultySelect.value = settings.difficulty;
-    if (lengthSelect) lengthSelect.value = settings.length;
-    if (soundCheckbox) soundCheckbox.checked = settings.soundEnabled;
-    if (doublePointsCheckbox) doublePointsCheckbox.checked = settings.doublePoints;
-    if (bonusTargetsCheckbox) bonusTargetsCheckbox.checked = settings.bonusTargets;
-    const themeInput = document.querySelector(`input[name="theme"][value="${settings.theme}"]`);
-    if (themeInput) themeInput.checked = true;
+function updateLoadSettings() {
+  const settings = JSON.parse(sessionStorage.getItem("settings"));
+  if (settings) {
+    playerinput.value = settings.PlayerName;
+    selectdifficulty.value = settings.difficulty;
+    selectlength.value = settings.gamelength;
+    soundCheck.checked = settings.soundenabled;
+    doublePointsCheck.checked = settings.doublepoints;
+    bonusTargetsCheck.checked = settings.bonustargets;
+    document.querySelector(`input[name='theme'][value='${settings.theme.toLowerCase()}']`).checked = true;
     updatePreview();
+    alert("Settings loaded!");
+  } else {
+    alert("No saved settings found.");
   }
 }
 
-function resetSettings() {
-  settings = {
-    player: "Player1",
-    difficulty: "medium",
-    theme: "classic",
-    length: 30,
-    soundEnabled: true,
-    doublePoints: false,
-    bonusTargets: true
-  };
-  if (playerInput) playerInput.value = settings.player;
-  if (difficultySelect) difficultySelect.value = settings.difficulty;
-  if (lengthSelect) lengthSelect.value = settings.length;
-  if (soundCheckbox) soundCheckbox.checked = settings.soundEnabled;
-  if (doublePointsCheckbox) doublePointsCheckbox.checked = settings.doublePoints;
-  if (bonusTargetsCheckbox) bonusTargetsCheckbox.checked = settings.bonusTargets;
-  const themeInput = document.querySelector(`input[name="theme"][value="${settings.theme}"]`);
-  if (themeInput) themeInput.checked = true;
-  applySettings();
+function updateResetSettings() {
+  playerinput.value = "";
+  selectdifficulty.value = "medium";
+  selectlength.value = 30;
+  soundCheck.checked = true;
+  doublePointsCheck.checked = false;
+  bonusTargetsCheck.checked = true;
+  document.querySelector("input[name='theme'][value='classic']").checked = true;
+  updatePreview();
+  alert("Settings reset to defaults.");
 }
 
-function goToGame() {
-  applySettings();
+/***************** Open Game ********************/
+function openGameWindow() {
+  updateSaveSettings(); // save before opening
   window.location.href = "game.html";
 }
 
-function goBackToSettings() {
-  window.location.href = "index.html";
-}
+/***************** Event Listeners ********************/
+[playerinput, selectdifficulty, selectlength, soundCheck, doublePointsCheck, bonusTargetsCheck]
+  .forEach(el => el.addEventListener("change", updatePreview));
+document.querySelectorAll("input[name='theme']").forEach(el => el.addEventListener("change", updatePreview));
 
-openGameBtn?.addEventListener("click", goToGame);
-saveSettingsBtn?.addEventListener("click", (event) => {
-  event.preventDefault();
-  applySettings();
-});
-loadSettingsBtn?.addEventListener("click", (event) => {
-  event.preventDefault();
-  loadLauncherSettings();
-});
-resetSettingsBtn?.addEventListener("click", (event) => {
-  event.preventDefault();
-  resetSettings();
-});
+openGameBtn.addEventListener("click", openGameWindow);
+saveSettingsBtn.addEventListener("click", updateSaveSettings);
+loadSettingsBtn.addEventListener("click", updateLoadSettings);
+resetSettingsBtn.addEventListener("click", updateResetSettings);
 
-[ playerInput, difficultySelect, lengthSelect, soundCheckbox, doublePointsCheckbox, bonusTargetsCheckbox ].forEach((input) => {
-  input?.addEventListener("change", updatePreview);
-});
+// Initialise preview
+updatePreview();
 
-(function initLauncher() {
-  loadLauncherSettings();
-  updatePreview();
-})();
